@@ -140,6 +140,13 @@ class UpstreamDirectBoostTests(unittest.TestCase):
                 boost.end()
             self.assertGreater(float((changed_logits-baseline_logits).abs().max()),1e-7)
             torch.testing.assert_close(forward_logits(llm,prepared,x),baseline_logits,rtol=0,atol=0)
+            with DirectAttentionBoost(llm,prepared,{**protocol,'layers':[0,1]}) as all_layers:
+                all_layers.begin(dict(step=2,block=0,block_length=2),prepared.ids_with_audio(x))
+                all_logits=forward_logits(llm,prepared,x)
+                all_layers.end()
+            self.assertEqual(len(all_layers.records[0]['layers']),2)
+            self.assertGreater(float((all_logits-baseline_logits).abs().max()),1e-7)
+            torch.testing.assert_close(forward_logits(llm,prepared,x),baseline_logits,rtol=0,atol=0)
 
     def test_complete_runner_reports_and_resume_on_bf16_upstream_cpu(self):
         from contextlib import ExitStack

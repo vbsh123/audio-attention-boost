@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
-run_name="${RUN_NAME:-audio_direct_boost50_v24_tps}"
+samples="${SAMPLES:-50}"
+case "${PROFILE:-original}" in
+  original) default_run="audio_direct_boost${samples}_v24_tps" ;;
+  early15_deep|early15_all) default_run="audio_direct_boost${samples}_${PROFILE}_v25_tps" ;;
+  *) echo 'Unknown PROFILE'; exit 2 ;;
+esac
+run_name="${RUN_NAME:-$default_run}"
 [[ "$run_name" =~ ^[a-zA-Z0-9_-]+$ ]] || { echo 'Invalid RUN_NAME'; exit 2; }
 if [[ ! -f "runs/$run_name/summary.json" ]]; then
   echo "No completed question pairs yet. Check the run log. Expected: runs/$run_name/summary.json"

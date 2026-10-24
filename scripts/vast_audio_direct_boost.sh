@@ -4,10 +4,19 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 mode="${1:-run}"
 case "$mode" in prepare|run|plan) ;; *) echo 'Usage: bash scripts/vast_audio_direct_boost.sh [prepare|run|plan]'; exit 2;; esac
-protocol="$PWD/experiments/audio_drift/direct_boost_protocol_v24.json"
 exclusions="$PWD/experiments/audio_drift/direct_boost_excluded_ids_v24.json"
 samples="${SAMPLES:-50}"
-run_name="${RUN_NAME:-audio_direct_boost${samples}_v24_tps}"
+profile="${PROFILE:-original}"
+case "$profile" in
+  original)
+    protocol="$PWD/experiments/audio_drift/direct_boost_protocol_v24.json"
+    default_run="audio_direct_boost${samples}_v24_tps" ;;
+  early15_deep|early15_all)
+    protocol="$PWD/experiments/audio_drift/direct_boost_${profile}_v25.json"
+    default_run="audio_direct_boost${samples}_${profile}_v25_tps" ;;
+  *) echo 'PROFILE must be original, early15_deep, or early15_all'; exit 2 ;;
+esac
+run_name="${RUN_NAME:-$default_run}"
 [[ "$run_name" =~ ^[a-zA-Z0-9_-]+$ && "$samples" =~ ^[1-9][0-9]*$ ]] && (( samples <= 500 )) || { echo 'Invalid run name/sample count (1–500)'; exit 2; }
 pool_count=50
 pool_seed=20261024

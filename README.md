@@ -79,6 +79,41 @@ accuracy and seconds/question. It does not isolate per-forward kernel speed.
 
 ## Optional controls and resuming
 
+### Earlier and stronger tuning: deep versus all layers
+
+Run both requested profiles sequentially on the same 50 pilot/development
+questions, keeping the larger validation pool unused:
+
+```bash
+git pull --ff-only
+nohup bash tune.sh > tune.log 2>&1 &
+tail -f tune.log
+```
+
+Both profiles start at `ceil(87.15 * 0.25) = 22`, ramp to forward index 88,
+and cap at **1.5x audio attention odds** (`logit_bias = log(1.5) = 0.405465`).
+`early15_deep` acts on layers 24–31; `early15_all` acts on all layers 0–31.
+The original profile is preserved. Increasing to 1.5x is a development tuning
+choice, not a strength inferred from held-out accuracy.
+
+Reports during each run:
+
+```bash
+PROFILE=early15_deep bash report.sh
+PROFILE=early15_all bash report.sh
+```
+
+After both finish, `tune.sh` checks identical inputs and baseline token IDs and
+writes `runs/audio_direct_boost50_tuning_v25/COMPARISON.md` with accuracy and TPS
+for each profile. It recomputes a paired baseline in each run. An unchanged rerun
+of `tune.sh` resumes completed work. `SAMPLES=2 bash tune.sh` is a smaller smoke
+check in separate directories. The checkout lock covers the whole suite.
+
+To run a single profile: `PROFILE=early15_deep bash run.sh` or
+`PROFILE=early15_all bash run.sh`. To validate a selected profile later, set
+`PROFILE=early15_deep` (or `early15_all`) on the 200/500 commands below and give
+it a new `RUN_NAME`; do not retune on those validation results.
+
 After the 50-question pilot finishes, the same frozen intervention supports 200
 or 500 questions. Both use one reproducible **500-question validation pool**,
 excluding the original 130 questions and all 50 pilot questions. The 200 run

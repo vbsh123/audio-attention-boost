@@ -8,15 +8,19 @@ Accuracy improvement is a hypothesis; no full-size GPU results are included.
 ## Clone, set up, and run on Vast
 
 Use Python 3.10–3.12 and a BF16-capable CUDA GPU with enough memory for the
-8B model plus Whisper (the prior experiments used an A40). Authenticate with
-GitHub before cloning this private repository.
+8B model plus Whisper (the prior experiments used an A40).
 
 ```bash
 git clone https://github.com/vbsh123/audio-attention-boost.git
 cd audio-attention-boost
 bash setup.sh
+```
 
-nohup bash run.sh > run.log 2>&1 &
+Setup automatically starts the 50-question paired experiment in the background
+after all installation and GPU checks succeed. No separate run command is needed.
+It prints the PID and writes progress to `run.log`. Follow progress if desired:
+
+```bash
 tail -f run.log
 ```
 
@@ -91,6 +95,9 @@ protocol requires a new `RUN_NAME`. The smoke check uses the first two questions
 of the same fixed evaluation pool; do not tune settings from its answers.
 
 `PYTHON=python3.12 bash setup.sh` selects a specific Python.
+`AUTO_RUN=0 bash setup.sh` installs and checks the environment without starting
+an experiment. A checkout lock prevents two run commands from using the GPU
+concurrently in this checkout. Repeated starts append to `run.log`.
 `AUDIO_VENV=/path/to/existing/audio/environment` reuses an existing environment.
 `DIFFA_ROOT` can select an existing clean pinned upstream checkout. Upstream
 source is verified and never edited.

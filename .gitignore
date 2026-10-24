@@ -10,3 +10,5 @@ runs/
 .env.*
 *.pem
 *.key
+.run.lock
+run.pid

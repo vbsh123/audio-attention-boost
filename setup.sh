@@ -24,5 +24,22 @@ import torch
 assert torch.cuda.is_available(), 'CUDA GPU required for the full experiment'
 assert torch.cuda.is_bf16_supported(), 'BF16-capable CUDA GPU required'
 print('GPU:',torch.cuda.get_device_name())
-print('Setup complete. Run: bash run.sh')
+print('Setup complete.')
 PY
+if [[ "${AUTO_RUN:-1}" == 0 ]]; then
+  echo 'Automatic run disabled. Start with: bash run.sh'
+elif [[ "${AUTO_RUN:-1}" == 1 ]]; then
+  if ! flock -n "$PWD/.run.lock" true; then
+    echo 'An experiment is already running in this checkout. Follow it with: tail -f run.log'
+    exit 0
+  fi
+  nohup bash "$PWD/run.sh" >> "$PWD/run.log" 2>&1 < /dev/null &
+  experiment_pid=$!
+  echo "$experiment_pid" > "$PWD/run.pid"
+  echo "Started the experiment in the background (PID $experiment_pid)."
+  echo 'Progress: tail -f run.log'
+  echo 'Accuracy and TPS: bash report.sh'
+else
+  echo 'AUTO_RUN must be 0 or 1' >&2
+  exit 2
+fi

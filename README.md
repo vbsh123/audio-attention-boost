@@ -79,6 +79,30 @@ accuracy and seconds/question. It does not isolate per-forward kernel speed.
 
 ## Optional controls and resuming
 
+After the 50-question pilot finishes, the same frozen intervention supports 200
+or 500 questions. Both use one reproducible **500-question validation pool**,
+excluding the original 130 questions and all 50 pilot questions. The 200 run
+uses the first 200 entries; the 500 run includes those same entries and reruns
+them. These are cumulative evaluations, not independent replications. Keep
+the settings frozen after inspecting the 200 results if treating the rest as
+validation. The pilot manifest must remain available locally; `PILOT_MANIFEST`
+can specify its path if moved.
+
+```bash
+git pull --ff-only
+
+# Run one at a time, after the pilot has finished:
+SAMPLES=200 RUN_NAME=audio_direct_boost200_v24_tps \
+  nohup bash run.sh > run200.log 2>&1 &
+
+# After the 200 run finishes, expand to 500 if desired:
+SAMPLES=500 RUN_NAME=audio_direct_boost500_v24_tps \
+  nohup bash run.sh > run500.log 2>&1 &
+
+RUN_NAME=audio_direct_boost200_v24_tps bash report.sh
+RUN_NAME=audio_direct_boost500_v24_tps bash report.sh
+```
+
 ```bash
 # Inspect the frozen plan without installing model dependencies:
 bash run.sh plan

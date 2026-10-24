@@ -1,4 +1,4 @@
-"""Paired 50-question baseline versus a frozen, increasing audio logit bias."""
+"""Paired baseline versus a frozen audio logit bias, on up to 500 questions."""
 import argparse
 import hashlib
 import json
@@ -81,8 +81,8 @@ def main():
     if args.manifest is None and not args.plan:
         p.error('--manifest is required for evaluation')
     protocol=json.loads(args.protocol.read_text())
-    if args.samples < 1 or args.samples > protocol['samples']:
-        raise ValueError('Use 1–50 questions with this frozen protocol')
+    if args.samples < 1 or args.samples > 500:
+        raise ValueError('Use 1–500 questions with this frozen intervention')
     bias_at(0, protocol)
     print(json.dumps(dict(samples=args.samples, start=protocol['start_forward'], end=protocol['end_forward'],
         max_bias=protocol['max_logit_bias'], max_odds_multiplier=protocol['maximum_audio_odds_multiplier'],
